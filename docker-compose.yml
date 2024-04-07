@@ -41,6 +41,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile.prod
+      args:
+        - API_END_POINT=https://${MY_DOMAIN_NAME}/api/
     command: ["node", "server.js", "-H", "0.0.0.0", "-p", "80"]
     environment:
       - NODE_ENV=production

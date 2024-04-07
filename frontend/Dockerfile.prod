@@ -27,7 +27,11 @@ COPY . .
 # Uncomment the following line in case you want to disable telemetry during the build.
 ENV NEXT_TELEMETRY_DISABLED 1
 
-# RUN yarn build
+# 環境変数を定義
+ARG API_END_POINT
+
+# 環境変数をビルド環境に設定
+ENV API_END_POINT=${API_END_POINT}
 
 # If using npm comment out above and use below instead
 RUN npm run build
