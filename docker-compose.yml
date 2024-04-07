@@ -1,0 +1,48 @@
+services:
+  https-portal:
+    image: steveltn/https-portal:1
+    depends_on:
+      - backend
+      - frontend
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAINS: "${MY_DOMAIN_NAME} -> http://frontend:80"
+      STAGE: production
+    restart: always
+    volumes:
+      - ./volumes/https-portal-data:/var/lib/https-portal
+      - ./volumes/log/directory:/var/log/nginx/
+      - ./volumes/logrotate/state/directory:/var/lib/logrotate/
+
+      - ./nginx-conf/default.conf.erb:/var/lib/nginx-conf/default.conf.erb
+      - ./nginx-conf/default.ssl.conf.erb:/var/lib/nginx-conf/default.ssl.conf.erb
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command:
+      [
+        "uvicorn",
+        "app.main:app",
+        "--proxy-headers",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000",
+      ]
+    environment:
+      STAGE: prod
+    restart: always
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    command: ["node", "server.js", "-H", "0.0.0.0", "-p", "80"]
+    environment:
+      - NODE_ENV=production
+      - API_END_POINT=https://${MY_DOMAIN_NAME}/api/
+    restart: always

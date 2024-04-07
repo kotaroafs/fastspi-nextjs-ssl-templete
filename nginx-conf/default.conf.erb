@@ -1,0 +1,23 @@
+server {
+    listen       80;
+    <% if ENV['LISTEN_IPV6'] && ENV['LISTEN_IPV6'].downcase == 'true' %>
+    listen       [::]:80;
+    <% end %>
+    server_name  <%= domain.name %>;
+
+    location / {
+      return    301 https://$server_name$request_uri;
+    }
+
+    location /api/ {
+        proxy_pass http://backend:8000/api/;
+    }
+
+
+    <%= acme_challenge_location %>
+
+    <% if ENV['CUSTOM_NGINX_SERVER_PLAIN_CONFIG_BLOCK'] %>
+      <%= ENV['CUSTOM_NGINX_SERVER_PLAIN_CONFIG_BLOCK'] %>
+    <% end %>
+
+}

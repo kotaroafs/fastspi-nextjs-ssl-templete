@@ -1,0 +1,39 @@
+services:
+  https-portal:
+    environment:
+      DOMAINS: "localhost"
+      STAGE: local
+    restart: no
+
+  backend:
+    ports:
+      - 8000:8000
+    command:
+      [
+        "uvicorn",
+        "app.main:app",
+        "--proxy-headers",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000",
+        "--reload",
+      ]
+    environment:
+      STAGE: dev
+    restart: no
+    volumes:
+      - ./backend/app:/backend/app
+
+  frontend:
+    build:
+      dockerfile: Dockerfile.dev
+    ports:
+      - 3000:3000
+    command: ["pnpm", "dev"]
+    environment:
+      - NODE_ENV=development
+      - API_END_POINT=http://backend:8000
+    restart: no
+    volumes:
+      - ./frontend:/frontend
